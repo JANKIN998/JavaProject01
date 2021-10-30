@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abc.hotelsys.dao.HotelDao">
+
+    <select id="addHotel" parameterType="Hotel">
+        insert into tbl_hotels(hotel_name,hotel_addr,hotel_phone,hotel_pic)
+        values(#{hotelName},#{hotelAddr},#{hotelPhone},#{hotelPic})
+    </select>
+
+    <select id="loadHotels" resultType="Hotel">
+        select hotel_id,hotel_name,hotel_addr,hotel_phone,hotel_room_count
+        from tbl_hotels
+        order by hotel_id desc
+    </select>
+
+    <select id="getPicByHotelId" parameterType="int" resultMap="picMap">
+        select hotel_pic
+        from tbl_hotels
+        where hotel_id=#{hotelId}
+    </select>
+
+    <select id="getHotelById" parameterType="int" resultType="Hotel">
+        select hotel_id,hotel_name,hotel_addr,hotel_phone,hotel_room_count
+        from tbl_hotels
+        where hotel_id=#{hotelId}
+    </select>
+
+    <delete id="delHotel" parameterType="int">
+        delete from tbl_hotels
+        where hotel_id=#{hotelId}
+    </delete>
+
+    <update id="updateHotel" parameterType="Hotel">
+        update tbl_hotels
+        set hotel_name=#{hotelName}, hotel_addr=#{hotelAddr}, hotel_phone=#{hotelPhone},hotel_room_count=#{hotelRoomCount},hotel_pic=#{hotelPic}
+        where hotel_id=#{hotelId}
+    </update>
+
+    <!--
+     把hotel_pic这个字段获取到的blob数据，通过转换器转成 byte[],然后以imgBytes为key保存到map结构中
+    -->
+    <resultMap type="java.util.Map" id="picMap">
+        <id column="hotel_pic" property="imgBytes" typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
+    </resultMap>
+
+
+</mapper>

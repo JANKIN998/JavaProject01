@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abc.hotelsys.dao.RoomDao">
+
+    <insert id="addRoom" parameterType="Room">
+        insert into tbl_rooms(room_no,room_type,room_equip,room_status,room_memo,hotel_id)
+        values(#{roomNo},#{roomType},#{roomEquip,typeHandler=com.abc.hotelsys.handler.StringArrayTypeHandler},#{roomStatus},#{roomMemo},#{hotel.hotelId})
+    </insert>
+
+    <delete id="delRoom" parameterType="int">
+        delete from tbl_rooms
+        where room_id=#{roomId}
+    </delete>
+
+    <select id="getRoomById" parameterType="int" resultMap="RoomResult">
+        select *
+        from tbl_rooms a inner join tbl_hotels b
+        on a.hotel_id=b.hotel_id and  a.room_id=#{roomId}
+    </select>
+    
+    <update id="updateRoom" parameterType="Room">
+        update tbl_rooms
+        set room_no=#{roomNo},room_type=#{roomType},room_equip=#{roomEquip,typeHandler=com.abc.hotelsys.handler.StringArrayTypeHandler},room_status=#{roomStatus},room_memo=#{roomMemo},hotel_id=#{hotel.hotelId}
+        where room_id=#{roomId}
+    </update>
+
+    <select id="cntRoomsByCondition" parameterType="com.abc.hotelsys.service.RoomQueryHelper" resultType="long">
+        select count(*) totalCnt
+        from tbl_rooms a, tbl_hotels b
+        where a. hotel_id=b.hotel_id
+        <if test="qryHotelNo!=null">
+            AND a.hotel_id=#{qryHotelNo}
+        </if>
+        <if test="qryRoomStatus!=null and qryRoomStatus.length()!=0">
+            AND room_status=#{qryRoomStatus}
+        </if>
+        <if test="qryRoomType!=null and qryRoomType.length()!=0">
+            AND room_type=#{qryRoomType}
+        </if>
+    </select>
+    
+    <select id="loadScopedRooms" parameterType="Map" resultMap="RoomResult">
+        select *
+        from tbl_rooms a, tbl_hotels b
+        where a. hotel_id=b.hotel_id
+        <if test="helper.qryHotelNo!=null">
+            AND a.hotel_id=#{helper.qryHotelNo}
+        </if>
+        <if test="helper.qryRoomStatus!=null and helper.qryRoomStatus.length()!=0">
+            AND room_status=#{helper.qryRoomStatus}
+        </if>
+        <if test="helper.qryRoomType!=null and helper.qryRoomType.length()!=0">
+            AND room_type=#{helper.qryRoomType}
+        </if>
+        order by a.room_id desc
+        limit #{start},#{size}
+    </select>
+
+    <!-- resultMap主要解决的是，如何把记录转成对象 -->
+    <resultMap type="Room" id="RoomResult">
+        <!-- id为主键字段，result是普通字段 -->
+        <id column="room_id" property="roomId"/>
+        <result column="room_no" property="roomNo"/>
+        <result column="room_status" property="roomStatus"/>
+        <result column="room_equip"
+                property="roomEquip"
+                typeHandler="com.abc.hotelsys.handler.StringArrayTypeHandler"/>
+        <result column="room_type" property="roomType"/>
+        <result column="room_memo" property="roomMemo"/>
+        <association property="hotel" javaType="Hotel">
+            <id column="hotel_id" property="hotelId"/>
+            <result column="hotel_name" property="hotelName"/>
+            <result column="hotel_addr" property="hotelAddr"/>
+            <result column="hotel_phone" property="hotelPhone"/>
+            <result column="hotel_room_count" property="hotelRoomCount"/>
+        </association>
+    </resultMap>
+
+</mapper>
